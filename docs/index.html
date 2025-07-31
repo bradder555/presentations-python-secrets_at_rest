@@ -108,8 +108,7 @@
 					<ol>
 						<li>What are secrets</li>
 						<li>Why you should encrypt your secrets</li>
-						<li>What is encryption</li>
-						<li>A simple example of encrypting secrets when using python</li>
+						<li>Different scenarios and solutions</li>
 						<li>Questions, answers and suggestions</li>
 					</ol>
 
@@ -166,8 +165,45 @@
 						</ol>
 					</section>
 				</section>
+				<section>
+					<section>
+						<h2>Desktop App</h2>
+						<pre><code data-trim class="language-python">
+							class ApiKeyService:
+								def __init__(self):
+									self.app_name = "Show Repos CLI"
+									self.pw_name = "Github Key"
 
+								def get(self):
+									print(f"gets credential")
+									return keyring.get_password(
+										self.app_name,
+										self.pw_name
+									)
 
+								def set(self, key):
+									print(f"sets credential")
+									keyring.set_password(
+										self.app_name,
+										self.pw_name,
+										key
+									)
+
+								def clear(self):
+									print("clears the credential")
+									keyring.delete_password(
+										self.app_name,
+										self.pw_name
+									)
+						</code></pre>
+					</section>
+					<section>
+						<h2>Linux Service</h2>
+						<pre><code data-trim class="language-python">
+
+						</code></pre>
+					</section>
+				</section>
 				<section>
 					<h2>Further Reading</h2>
 					<ul>

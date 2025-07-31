@@ -1,36 +1,93 @@
+from email.message import EmailMessage
 from typing import Annotated
 
-from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
-import aiofiles
+import asyncio
+import aiocron
+import aiohttp
+import aiosmtplib
+import json
+from pydantic import BaseModel, TypeAdapter, ValidationError
+from datetime import datetime
 
-import os
-import sys
+class AuroraAlert(BaseModel):
+    start_time: datetime
+    valid_until: datetime
+    k_aus: float
+    lat_band: str
+    description: str
 
-app = FastAPI()
+AlertList = TypeAdapter(list[AuroraAlert])
 
-SRC_DIR = "./src/app"
-STATIC_DIR = f"{SRC_DIR}/static"
-TEMP_DIR = f"{SRC_DIR}/upload_dir"
-CAT_DIR = f"{STATIC_DIR}/cats"
+def make_alert_message(to, data: AlertList, frm="aurora-alert@gmail.com"):
+    AuroraAlert.model_validate_json(data)
+    message = EmailMessage()
+    message["From"] = frm
+    message["To"] = to
+    message["Subject"] = "Aurora Alert!"
 
-def hello():
-    print("Hello world")
+    body = ""
+    for d in data:
+        d: AuroraAlert
+        body += (
+            f"Description: {d.description}\n"
+            f"Between: {d.start_time} and : {d.valid_until}\n"
+            f"K-index: {d.k_aus}, Latitude band: {d.lat_band}\n\n"
+         )
+    message.set_content(
+        f"""
+        Dear {frm}
+        There are aurora alerts:
+        {body}
+        """)
+    return message
 
-@app.post("/upload_cat")
-async def root(
-    file: Annotated[UploadFile, File()],
-    picture_name: Annotated[str, Form()],
+async def app(
+    api_key,
+    send_to="",
+    send_from="",
+    smtp_username="",
+    smtp_password="",
+    smtp_url="smtp.gmail.com",
+    smtp_port=465,
+    use_tls=True,
+    aurora_url='https://sws-data.sws.bom.gov.au/api/v1/get-aurora-alert',
 ):
-    async with aiofiles.open(f"{TEMP_DIR}/tempfile", 'wb') as out_file:
-        while content := await file.read(1024):
-            await out_file.write(content)
-    os.system(f"cp \"{TEMP_DIR}/tempfile\" \"{CAT_DIR}/{picture_name}\".{file.content_type.rsplit('/', 1)[-1]}")
-    return RedirectResponse(".", status_code=303)
+    async with aiohttp.ClientSession() as session:
+        smtp_client = aiosmtplib.SMTP(
+            hostname=smtp_url,
+            port=smtp_port,
+            use_tls=use_tls,
+            username=smtp_username,
+            password=smtp_password
+        )
 
-@app.get("/list_cats")
-async def list_cats():
-    return os.listdir(f"{STATIC_DIR}/cats")
+        while True:
+            await aiocron.crontab('* * * * *').next()
 
-app.mount("/", StaticFiles(directory="./src/app/static", html = True), name="cat-pics")
+            async with (
+                session.post(
+                    aurora_url,
+                    json={
+                        "api_key": api_key
+                    }
+                ) as response
+            ):
+                t = await response.text()
+                try:
+                    parsed = AlertList.validate_json(t)
+                except ValidationError as e:
+                    print(f"Validation Error {e}")
+                    continue
+
+                async with smtp_client:
+                    await smtp_client.send_message(
+                        make_alert_message(
+                            data=parsed,
+                            to = send_to,
+                            frm = send_from,
+                        )
+                    )
+
+
+if __name__ == "__main__":
+    asyncio.run(app(...))
