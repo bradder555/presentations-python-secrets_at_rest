@@ -1,20 +1,19 @@
-import os
-
 import asyncio
+import logging
+import os
 
 from app import App
 from models import Config
 from util import SecretUtil
 
-import logging
-from systemd.journal import JournaldLogHandler
+from cysystemd.journal import JournaldLogHandler
 
 SERVICE_NAME = "AuroraNotify"
 CONFIG_FILE = "./aurora.conf"
 ENCR_CONFIG_FILE = "./aurora.dat"
 
-logger = logging.getLogger(SERVICE_NAME)
-logger.addHandler(JournaldLogHandler())
+logging.basicConfig(handlers=[JournaldLogHandler()], level=logging.DEBUG)
+logging.getLogger().name = SERVICE_NAME
 
 
 if __name__ == "__main__":

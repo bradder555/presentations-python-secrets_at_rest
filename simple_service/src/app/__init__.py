@@ -1,4 +1,4 @@
-from models import Config, AlertList, AuroraAlert
+from models import Config, AlertList, AuroraAlert, AuroraResponse
 from util import send_email
 
 import aiocron
@@ -10,6 +10,9 @@ from tzlocal import get_localzone
 
 local_tz = get_localzone()
 local_time = lambda: datetime.now(local_tz).isoformat()
+
+import logging
+logger = logging.getLogger()
 
 class App:
     def __init__(self, service_name, config: Config):
@@ -28,6 +31,9 @@ class App:
         subject,
         body
     ):
+        logger.debug(
+            f"Sent email {subject} to {self._config.smtp_send_to}"
+        )
         await send_email(
             smtp_client= self._smtp_client,
             frm = self._config.smtp_send_from,
@@ -38,15 +44,14 @@ class App:
 
     async def send_alert_message(
         self,
-        data: AlertList,
+        data: AuroraResponse,
     ):
-        AuroraAlert.model_validate_json(data)
 
         body = (
             f"Dear {self._config.smtp_send_to}\n"
             f"There are aurora alerts:\n"
         )
-        for d in data:
+        for d in data.data:
             d: AuroraAlert
             body += (
                 f"Description: {d.description}\n"
@@ -79,9 +84,8 @@ class App:
         await self.send_wake_up_msg()
 
         async with aiohttp.ClientSession() as session:
+            logger.debug("cron job woke up")
             while True:
-                await aiocron.crontab('*/10 * * * *').next()
-
                 async with (
                     session.post(
                         self._config.bom_aurora_url,
@@ -91,12 +95,13 @@ class App:
                     ) as response
                 ):
                     t = await response.text()
+                    logger.debug(f"Received data from BOM\n{t}")
                     try:
-                        parsed = AlertList.validate_json(t)
+                        parsed = AuroraResponse.validate_json(t)
+                        await self.send_alert_message(
+                            parsed,
+                        )
                     except ValidationError as e:
-                        print(f"Validation Error {e}")
-                        continue
-
-                await self.send_alert_message(
-                    parsed,
-                )
+                        logger.warning(f"Validation Error", exc_info=e)
+                    finally:
+                        await aiocron.crontab('*/10 * * * *').next()

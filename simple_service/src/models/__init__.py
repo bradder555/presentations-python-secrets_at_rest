@@ -11,6 +11,9 @@ class AuroraAlert(BaseModel):
 
 AlertList = TypeAdapter(list[AuroraAlert])
 
+class AuroraResponse(BaseModel):
+    data : list[AuroraAlert]
+
 class Config(BaseModel):
     bom_api_key: str = ""
     smtp_send_to: str = ""
