@@ -1,93 +1,102 @@
-from email.message import EmailMessage
-from typing import Annotated
+from models import Config, AlertList, AuroraAlert
+from util import send_email
 
-import asyncio
 import aiocron
 import aiohttp
 import aiosmtplib
-import json
-from pydantic import BaseModel, TypeAdapter, ValidationError
+from pydantic import ValidationError
 from datetime import datetime
+from tzlocal import get_localzone
 
-class AuroraAlert(BaseModel):
-    start_time: datetime
-    valid_until: datetime
-    k_aus: float
-    lat_band: str
-    description: str
+local_tz = get_localzone()
+local_time = lambda: datetime.now(local_tz).isoformat()
 
-AlertList = TypeAdapter(list[AuroraAlert])
-
-def make_alert_message(to, data: AlertList, frm="aurora-alert@gmail.com"):
-    AuroraAlert.model_validate_json(data)
-    message = EmailMessage()
-    message["From"] = frm
-    message["To"] = to
-    message["Subject"] = "Aurora Alert!"
-
-    body = ""
-    for d in data:
-        d: AuroraAlert
-        body += (
-            f"Description: {d.description}\n"
-            f"Between: {d.start_time} and : {d.valid_until}\n"
-            f"K-index: {d.k_aus}, Latitude band: {d.lat_band}\n\n"
-         )
-    message.set_content(
-        f"""
-        Dear {frm}
-        There are aurora alerts:
-        {body}
-        """)
-    return message
-
-async def app(
-    api_key,
-    send_to="",
-    send_from="",
-    smtp_username="",
-    smtp_password="",
-    smtp_url="smtp.gmail.com",
-    smtp_port=465,
-    use_tls=True,
-    aurora_url='https://sws-data.sws.bom.gov.au/api/v1/get-aurora-alert',
-):
-    async with aiohttp.ClientSession() as session:
-        smtp_client = aiosmtplib.SMTP(
-            hostname=smtp_url,
-            port=smtp_port,
-            use_tls=use_tls,
-            username=smtp_username,
-            password=smtp_password
+class App:
+    def __init__(self, service_name, config: Config):
+        self._service_name = service_name
+        self._config = config
+        self._smtp_client = aiosmtplib.SMTP(
+            hostname=config.smtp_url,
+            port=config.smtp_port,
+            use_tls=config.smtp_use_tls,
+            username=config.smtp_username,
+            password=config.smtp_password
         )
 
-        while True:
-            await aiocron.crontab('* * * * *').next()
+    async def _send_email(
+        self,
+        subject,
+        body
+    ):
+        await send_email(
+            smtp_client= self._smtp_client,
+            frm = self._config.smtp_send_from,
+            to = self._config.smtp_send_to,
+            subject= subject,
+            body= body
+        )
 
-            async with (
-                session.post(
-                    aurora_url,
-                    json={
-                        "api_key": api_key
-                    }
-                ) as response
-            ):
-                t = await response.text()
-                try:
-                    parsed = AlertList.validate_json(t)
-                except ValidationError as e:
-                    print(f"Validation Error {e}")
-                    continue
+    async def send_alert_message(
+        self,
+        data: AlertList,
+    ):
+        AuroraAlert.model_validate_json(data)
 
-                async with smtp_client:
-                    await smtp_client.send_message(
-                        make_alert_message(
-                            data=parsed,
-                            to = send_to,
-                            frm = send_from,
-                        )
-                    )
+        body = (
+            f"Dear {self._config.smtp_send_to}\n"
+            f"There are aurora alerts:\n"
+        )
+        for d in data:
+            d: AuroraAlert
+            body += (
+                f"Description: {d.description}\n"
+                f"Between: {d.start_time} and : {d.valid_until}\n"
+                f"K-index: {d.k_aus}, Latitude band: {d.lat_band}\n\n"
+             )
 
+        body += (
+            f"{body}\n\n"
+            f"Sent at {local_time()} by {self._service_name}"
+        )
 
-if __name__ == "__main__":
-    asyncio.run(app(...))
+        await self._send_email(
+            subject=f"{self._service_name} - Aurora Alert!",
+            body=body
+        )
+
+    async def send_wake_up_msg(
+        self,
+    ):
+        await self._send_email(
+            subject=f"{self._service_name} - Service Started",
+            body = (
+                f"Dear {self._config.smtp_send_to}\n\n"
+                f"AuroraWatch Service has started at {local_time()}"
+            )
+        )
+
+    async def run(self):
+        await self.send_wake_up_msg()
+
+        async with aiohttp.ClientSession() as session:
+            while True:
+                await aiocron.crontab('*/10 * * * *').next()
+
+                async with (
+                    session.post(
+                        self._config.bom_aurora_url,
+                        json={
+                            "api_key": self._config.bom_api_key
+                        }
+                    ) as response
+                ):
+                    t = await response.text()
+                    try:
+                        parsed = AlertList.validate_json(t)
+                    except ValidationError as e:
+                        print(f"Validation Error {e}")
+                        continue
+
+                await self.send_alert_message(
+                    parsed,
+                )
