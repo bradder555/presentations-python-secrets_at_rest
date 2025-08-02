@@ -1,313 +1,456 @@
 <!doctype html>
 <html lang="en">
 
-	<head>
-		<meta charset="utf-8">
+<head>
+    <meta charset="utf-8">
 
-		<title>Encryption At Rest</title>
+    <title>Keeping Secrets Secret</title>
 
-		<meta name="description" content="A presentation on encrypting secrets at rest">
-		<meta name="author" content="Brad Phillips">
+    <meta name="description" content="A presentation on encrypting secrets at rest">
+    <meta name="author" content="Brad Phillips">
 
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<link 
-			rel="stylesheet" 
-			href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reset.min.css" 
-			integrity="sha512-Mjxkx+r7O/OLQeKeIBCQ2yspG1P5muhAtv/J+p2/aPnSenciZWm5Wlnt+NOUNA4SHbnBIE/R2ic0ZBiCXdQNUg==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer" 
-		/>
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reset.min.css"
+            integrity="sha512-Mjxkx+r7O/OLQeKeIBCQ2yspG1P5muhAtv/J+p2/aPnSenciZWm5Wlnt+NOUNA4SHbnBIE/R2ic0ZBiCXdQNUg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
 
-		<link 
-			rel="stylesheet" 
-			href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css" 
-			integrity="sha512-ZIo9ivf88U0L1S+0D/npMNTTkjez5B9cK5xIecN4IA2OmtbTNBbPAZo/0cBC195sq7FU7cEOVPwtit37f/+1rQ==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer" 
-		/>
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css"
+            integrity="sha512-ZIo9ivf88U0L1S+0D/npMNTTkjez5B9cK5xIecN4IA2OmtbTNBbPAZo/0cBC195sq7FU7cEOVPwtit37f/+1rQ=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
 
-		<link 
-			rel="stylesheet" 
-			href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/night.min.css" 
-			integrity="sha512-2yD1V8m3dLdhZrF/zwnVtekdfx+7TlsgYiONWye1Bi3/tukH21xfSDbIKHj65/pKMstEHuKyGrEBIke6MteAYA==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer" 
-		/>
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/night.min.css"
+            integrity="sha512-2yD1V8m3dLdhZrF/zwnVtekdfx+7TlsgYiONWye1Bi3/tukH21xfSDbIKHj65/pKMstEHuKyGrEBIke6MteAYA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
 
-		<link 
-			rel="stylesheet" 
-			href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css" 
-			integrity="sha512-z8wQkuDRFwCBfoj7KOiu1MECaRVoXx6rZQWL21x0BsVVH7JkqCp1Otf39qve6CrCycOOL5o9vgfII5Smds23rg==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer" 
-		/>
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css"
+            integrity="sha512-z8wQkuDRFwCBfoj7KOiu1MECaRVoXx6rZQWL21x0BsVVH7JkqCp1Otf39qve6CrCycOOL5o9vgfII5Smds23rg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
 
-		<style>
-		.slide-number{
-			left: 8px;
-			right: unset !important;
-			background-color: #00000000 !important;
-		}
+    <style>
+        .slide-number {
+            left: 8px;
+            right: unset !important;
+            background-color: #00000000 !important;
+        }
 
-		#qrcode>img{
-			background: white;
-			padding: 40px;
-			margin-left: auto;
-			margin-right: auto;
-		}
-		</style>
-		
-	</head>
+        #qrcode > img {
+            background: white;
+            padding: 40px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
 
-	<body>
+</head>
 
-		<div class="reveal">
+<body>
 
-			<!-- Any section element inside of this container is displayed as a slide -->
-			<div class="slides">
-				<section>
-					<h2>Encrypting Secrets at Rest</h2>
-					<p>
-						<small>Brad Phillips</small>
-					</p>
-				</section>
+<div class="reveal">
 
-				<section>
-					<section>
-						<h1>Introduction</h1>
-					</section>
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section>
 
-					<section>
-						<img src="images/family2_cropped.jpg" data-preview-image>
-					</section>
+        </section>
+        <section>
+            <section>
+                <h1>About Me</h1>
+            </section>
 
-					<section>
-						<img src="images/truegrit.jpg" data-preview-image>
-					</section>
+            <section>
+                <img src="images/family2_cropped.jpg" data-preview-image>
+            </section>
 
-					<section>
-						<div class="h-stack justify-center">
-						<img src="images/3dprinting.png" width="40%" data-preview-image>
-						<img src="images/blender.jpg" width="50%" style="padding-bottom: 10%;" data-preview-image>
-						</div>
-					</section>
+            <section>
+                <img src="images/truegrit.jpg" data-preview-image>
+            </section>
 
-					<section>
-						<img src="images/my_linkedin_qr_code.jpeg" data-preview-image>
-					</section>
+            <section>
+                <div class="h-stack justify-center">
+                    <img src="images/3dprinting.png" width="40%" data-preview-image>
+                    <img src="images/blender.jpg" width="50%" style="padding-bottom: 10%;" data-preview-image>
+                </div>
+            </section>
 
-				</section>
+            <section>
+                <img src="images/my_linkedin_qr_code.jpeg" data-preview-image>
+            </section>
 
+            <section>
+                <a href="https://www.flickr.com/photos/spool32/">
+                    <img src="images/cake.jpg">
+                    <br>
+                    <p style="font-size:10px; font-style: italic">Creative Commons, attribution Will Clayton</p>
+                </a>
 
-				<section>
-					<h2>What I'm going to talk about</h2>
-					<ol>
-						<li>What are secrets</li>
-						<li>Why you should encrypt your secrets</li>
-						<li>Different scenarios and solutions</li>
-						<li>Questions, answers and suggestions</li>
-					</ol>
+            </section>
 
-				</section>
+        </section>
 
-				<section>
-					<section>
-						<h2>Secrets</h2>
-						<p class="r-fit-text">?</p>
-					</section>
-					<section>
-						<h2>Secrets</h2>
-						<ul>
-							<li>usernames and passwords</li>
-							<li>tokens</li>
-							<li>api keys</li>
-							<li>private keys</li>
-							<li>service account passwords</li>
-							<li class="fragment">client data</li>
-						</ul>
+        <section>
+            <h2>Keeping Secrets Secret</h2>
+            <p>
+                <small>Brad Phillips</small>
+            </p>
+        </section>
 
-						<aside class="notes">
-							<li>credentials that grant access to systems or data</li>
-						</aside>
-					</section>
-					<section>
-						<h2>Ways to store secrets?</h2>
-						<ol>
-							<li class="fragment">Hard code 😱</li>
-							<li class="fragment">Configuration files 😭</li>
-							<li class="fragment">Clear text in a database 😞</li>
-							<li class="fragment">Environment Variables 🫤</li>
-							<li class="fragment">Stored in a secure storage 😎</li>
-						</ol>
-					</section>
-					<section>
-						<h2>What are secrets 'at rest'?</h2>
-						<p>Simply put, stored on disk</p>
-					</section>
-					<section>
-						<h2>How can you lose secrets?</h2>
-						<ol>
-							<li class="fragment">Disgruntled employees / coworkers 😞</li>
-							<li class="fragment">Hackers 😭</li>
-							<li class="fragment">Check into version control 😱</li>
-						</ol>
-					</section>
-					<section>
-						<h2>Consequences</h2>
-						<ol>
-							<li><a href="https://wptavern.com/ryan-hellyers-aws-nightmare-leaked-access-keys-result-in-a-6000-bill-overnight">Cloud Costs (Ryan Hellyers $6000 bill)</a></li>
-							<li>Data loss</li>
-							<li>Reputational damage</li>
-						</ol>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>Desktop App</h2>
-						<pre><code data-trim class="language-python">
-							class ApiKeyService:
-								def __init__(self):
-									self.app_name = "Show Repos CLI"
-									self.pw_name = "Github Key"
+        <section>
+            <h2>What I'm going to talk about</h2>
+            <ol>
+                <li>What are secrets</li>
+                <li>Why you should encrypt your secrets</li>
+                <li>Different scenarios and solutions</li>
+                <li>Questions, answers and suggestions</li>
+            </ol>
 
-								def get(self):
-									print(f"gets credential")
-									return keyring.get_password(
-										self.app_name,
-										self.pw_name
-									)
+        </section>
 
-								def set(self, key):
-									print(f"sets credential")
-									keyring.set_password(
-										self.app_name,
-										self.pw_name,
-										key
-									)
+        <section>
+            <section>
+                <h2>Secrets</h2>
+                <p class="r-fit-text">?</p>
+            </section>
+            <section>
+                <h2>Secrets</h2>
+                <ul>
+                    <li>usernames and passwords</li>
+                    <li>tokens</li>
+                    <li>api keys</li>
+                    <li>private keys</li>
+                    <li>service account passwords</li>
+                    <li class="fragment">client data</li>
+                </ul>
 
-								def clear(self):
-									print("clears the credential")
-									keyring.delete_password(
-										self.app_name,
-										self.pw_name
-									)
-						</code></pre>
-					</section>
-					<section>
-						<h2>Linux Service</h2>
-						<pre><code data-trim class="language-python">
+                <aside class="notes">
+                    <li>credentials that grant access to systems or data</li>
+                </aside>
+            </section>
+            <section>
+                <h2>Ways to store secrets?</h2>
+                <ol>
+                    <li class="fragment">Hard code 😱</li>
+                    <li class="fragment">Configuration files 😭</li>
+                    <li class="fragment">Clear text in a database 😞</li>
+                    <li class="fragment">Environment Variables 🫤</li>
+                    <li class="fragment">Stored in a secure storage 😎</li>
+                </ol>
+            </section>
+            <section>
+                <h2>What are secrets 'at rest'?</h2>
+                <p>Simply put, stored on disk</p>
+            </section>
+            <section>
+                <h2>How can you lose secrets?</h2>
+                <ol>
+                    <li class="fragment">Disgruntled employees / coworkers 😞</li>
+                    <li class="fragment">Hackers 😭</li>
+                    <li class="fragment">Check into version control 😱</li>
+                </ol>
+            </section>
+        </section>
+        <section>
+            <h2>Why you should encrypt your secrets</h2>
+            <ol>
+                <li>
+                    <a href="https://wptavern.com/ryan-hellyers-aws-nightmare-leaked-access-keys-result-in-a-6000-bill-overnight">Cloud
+                        Costs (Ryan Hellyers $6000 bill)</a></li>
+                <li>Data loss</li>
+                <li>Reputational damage</li>
+            </ol>
+        </section>
+        <section>
+            <section>
+                <h2>Scenarios</h2>
+                <ol>
+                    <li> Desktop App</li>
+                    <li> A Linux Service</li>
+                    <li> A Container</li>
+                </ol>
+            </section>
+            <section>
+                <h2>Examples</h2>
+                <img src="./images/file_tree.png">
+            </section>
+            <section>
+                <aside class="notes">
+                    <p>
+                        keyring works on windows, linux and mac
+                    </p>
+                </aside>
+                <h2>Desktop App</h2>
+                <div class="fragment fade-out">
+							<pre>
+								<code class="language-shell">
+									uv add keyring
+								</code>
+							</pre>
+                    <a href="https://pypi.org/project/keyring/">
+                        <p style="font-size:10px;font-style:italic;">pypi.org</p>
+                    </a>
+                </div>
 
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<h2>Further Reading</h2>
-					<ul>
-						<li><a href="https://www.theregister.com/2020/01/23/aws_engineer_credentials_github">Hapless AWS engineer spilled passwords...</a></li>
-						<li><a href="https://www.nodejs-security.com/blog/do-not-use-secrets-in-environment-variables-and-here-is-how-to-do-it-better">Secrets, how to do it better</a></li>
-					</ul>
-				</section>
+                <pre class="fragment fade-in">
 
-				<section>
-					<h1>THE END</h1>
-					<div id="qrcode"></div>
-				</section>
+				<code
+						data-trim
+						class="language-python "
+						data-line-numbers="1|10|17"
+				>
+					import keyring
 
-			</div>
+					class ApiKeyService:
+						def __init__(self):
+							self.app_name = "Show Repos CLI"
+							self.pw_name = "Github Key"
 
-		</div>
+						def get(self):
+							print(f"gets credential")
+							return keyring.get_password(
+								self.app_name,
+								self.pw_name
+							)
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" 
-			integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+						def set(self, key):
+							print(f"sets credential")
+							keyring.set_password(
+								self.app_name,
+								self.pw_name,
+								key
+							)
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js" 
-			integrity="sha512-lRYVCjdH7dCPCzqLL6eBn78p6WGK5pZxgYBgzTQfWlfX7yiZFLt/qHOMSETHUIz2aZIU/KbjwYHiMsmrcVgJnA==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+						def clear(self):
+							print("clears the credential")
+							keyring.delete_password(
+								self.app_name,
+								self.pw_name
+							)
+				</code></pre>
+            </section>
+            <section>
+                <h3>Application - Demo</h3>
+            </section>
+                <section>
+                	<h2>Linux Service</h2>
+                </section>
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/zoom/zoom.min.js" 
-			integrity="sha512-Gras1ky8LoFJWwMTxBWyN2wfHfnJXQlyhHFH3M+m/jHe297DZsrQxg9P6Kxka6waxl4NeeQzietoFlCxL7x10g==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+                <section>
+                    <h3>Config Files!</h3>
+                    <pre><code
+                        data-trim class="language-python"
+                        data-line-numbers="2|5|8|9|13|12-14|10-15|17-22"
+                    >
+                        if __name__ == "__main__":
+                            secret_util = SecretUtil(SERVICE_NAME)
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/notes/notes.min.js" 
-			integrity="sha512-6LAcdj7pQal9JkdALNexzVKd4zWuYUxOXuzdF21iOx7LJSlF5ibFi2TAR7GQ00XhfPAw7/R8f1dZ69gFGhzXtw==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+                            config = None
+                            if os.path.exists(CONFIG_FILE):
+                                with open(CONFIG_FILE, "r") as cf:
+                                    # okay to crash if file is corrupted
+                                    config = Config.model_validate_json(cf.read())
+                                secure_delete(CONFIG_FILE)
+                                with open(ENCR_CONFIG_FILE, "wb") as cf:
+                                    cf.write(
+                                        secret_util.encrypt(
+                                            config.model_dump_json().encode()
+                                        )
+                                    )
+                            else:
+                                with open(ENCR_CONFIG_FILE, "rb") as ef:
+                                    config = Config.model_validate_json(
+                                        secret_util.decrypt(
+                                            ef.read()
+                                        )
+                                    )
+                        </code></pre>
+                </section>
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/search/search.min.js" 
-			integrity="sha512-hzXKyeT22k18jZdSR25sVbZqa1UAc8nLubaKsW7EwarLBRtFMZMmLQOc2n29Zv+9r2X8Iex9WJqLudXO8e2x6w==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+                <section>
+                    <h3>Secure Delete Utility </h3>
+                    <pre><code
+                            data-trim class="language-python"
+                            data-line-numbers="4|5|6-8|9"
+                    >
+                    import os
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/markdown/markdown.min.js" 
-			integrity="sha512-4exkEeyVuaWUFKozXl6L3UCugl6ai1cKnrVFkWUstdrNB2sDxxmPEaHBzTlYm9wX78EjPzEBG0s8k37oPeUFIw==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+                    def secure_delete(file):
+                        file_len = os.path.getsize(file)
+                        with open(file, "rb+") as f:
+                            f.seek(0)
+                            f.write(b'\0'*file_len)
+                            f.flush()
+                        os.unlink(file)
+					</code></pre>
+                </section>
 
-		<script 
-			src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js" 
-			integrity="sha512-IkPzJ3njtxNL2Frm7zr18CEj9HH+CEFAqh+jSKjXTHVFGtWG1+USbIXINU8zdGmyLpf/OBIVfpNLGNgwhlymkA==" 
-			crossorigin="anonymous" 
-			referrerpolicy="no-referrer"
-		></script>
+                <section>
+                    <h3>Cryptography Service</h3>
+					<pre><code
+							data-trim class="language-python"
+							data-line-numbers="1|2|5-13|6,13|10|11|15-19"
+					>
+					import keyring
+					from cryptography.fernet import Fernet
 
-		<script>
+					class SecretUtil:
+						def __init__(self, service_name):
+							c = keyring.get_credential(service_name, "key" )
+							key = c.password.encode() if c else None
 
-			// Also available as an ES module, see:
-			// https://revealjs.com/initialization/
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				center: true,
-				hash: true,
-				// The "normal" size of the presentation, aspect ratio will
-				// be preserved when the presentation is scaled to fit different
-				// resolutions. Can be specified using percentage units.
-				width: 1080,
-				height: 1080,
+							if key is None:
+								key = Fernet.generate_key()
+								keyring.set_password(service_name, "key", key.decode())
 
-				// Factor of the display size that should remain empty around
-				// the content
-				margin: 0.04,
+							self._fernet = Fernet(key)
 
-				// Bounds for smallest/largest possible scale to apply to content
-				minScale: 0.2,
-				maxScale: 2.0,
-				slideNumber: 'c/t' ,
-				transition: 'concave',
-				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
-			});
+						def encrypt(self, d: bytes):
+							return self._fernet.encrypt(d)
 
-			new QRCode(
-				document.getElementById("qrcode"), 
-				{
-					text: "https://tinyurl.com/3ujj3z7b",
-					width: 400,
-					height: 400,
-				}
-			);
+						def decrypt(self, d: bytes):
+							return self._fernet.decrypt(d)
+					</code></pre>
+                </section>
+                <section>
+                    <h3>Linux Service - Demo</h3>
+                </section>
+                <section>
+                    <H3>Docker!</H3>
+					<pre><code
+						data-trim class="language-docker"
+						data-line-numbers=""
+                    >
 
-		</script>
+					</code></pre>
+                </section>
 
-	</body>
+            </section>
+        </section>
+        <section>
+            <h2>Further Reading</h2>
+            <ul>
+                <li><a href="https://www.theregister.com/2020/01/23/aws_engineer_credentials_github">Hapless AWS
+                    engineer spilled passwords...</a></li>
+                <li>
+                    <a href="https://www.nodejs-security.com/blog/do-not-use-secrets-in-environment-variables-and-here-is-how-to-do-it-better">Secrets,
+                        how to do it better</a></li>
+            </ul>
+        </section>
+
+        <section>
+            <h1>THE END</h1>
+            <div id="qrcode"></div>
+        </section>
+
+    </div>
+
+</div>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+        integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"
+        integrity="sha512-lRYVCjdH7dCPCzqLL6eBn78p6WGK5pZxgYBgzTQfWlfX7yiZFLt/qHOMSETHUIz2aZIU/KbjwYHiMsmrcVgJnA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/zoom/zoom.min.js"
+        integrity="sha512-Gras1ky8LoFJWwMTxBWyN2wfHfnJXQlyhHFH3M+m/jHe297DZsrQxg9P6Kxka6waxl4NeeQzietoFlCxL7x10g=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/notes/notes.min.js"
+        integrity="sha512-6LAcdj7pQal9JkdALNexzVKd4zWuYUxOXuzdF21iOx7LJSlF5ibFi2TAR7GQ00XhfPAw7/R8f1dZ69gFGhzXtw=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/search/search.min.js"
+        integrity="sha512-hzXKyeT22k18jZdSR25sVbZqa1UAc8nLubaKsW7EwarLBRtFMZMmLQOc2n29Zv+9r2X8Iex9WJqLudXO8e2x6w=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/markdown/markdown.min.js"
+        integrity="sha512-4exkEeyVuaWUFKozXl6L3UCugl6ai1cKnrVFkWUstdrNB2sDxxmPEaHBzTlYm9wX78EjPzEBG0s8k37oPeUFIw=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"
+        integrity="sha512-IkPzJ3njtxNL2Frm7zr18CEj9HH+CEFAqh+jSKjXTHVFGtWG1+USbIXINU8zdGmyLpf/OBIVfpNLGNgwhlymkA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+
+<script>
+
+    // Also available as an ES module, see:
+    // https://revealjs.com/initialization/
+    Reveal.initialize({
+        controls: true,
+        progress: true,
+        center: true,
+        hash: true,
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: 1080,
+        height: 1080,
+
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        slideNumber: 'c/t',
+        transition: 'concave',
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight]
+    });
+
+    new QRCode(
+        document.getElementById("qrcode"),
+        {
+            text: "https://tinyurl.com/3ujj3z7b",
+            width: 400,
+            height: 400,
+        }
+    );
+
+</script>
+
+</body>
 </html>

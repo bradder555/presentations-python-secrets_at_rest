@@ -5,6 +5,7 @@ import os
 from app import App
 from models import Config
 from util import SecretUtil
+from util import secure_delete
 
 from cysystemd.journal import JournaldLogHandler
 
@@ -24,7 +25,7 @@ if __name__ == "__main__":
         with open(CONFIG_FILE, "r") as cf:
             # okay to crash if file is corrupted
             config = Config.model_validate_json(cf.read())
-        os.unlink(CONFIG_FILE)
+        secure_delete(CONFIG_FILE)
         with open(ENCR_CONFIG_FILE, "wb") as cf:
             cf.write(
                 secret_util.encrypt(

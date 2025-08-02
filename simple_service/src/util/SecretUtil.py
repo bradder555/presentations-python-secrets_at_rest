@@ -1,6 +1,5 @@
 import keyring
 from cryptography.fernet import Fernet
-import os, sys
 
 class SecretUtil:
     def __init__(self, service_name):
