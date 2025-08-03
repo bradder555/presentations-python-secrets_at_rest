@@ -118,7 +118,7 @@
             <h2>What I'm going to talk about</h2>
             <ol>
                 <li>What are secrets</li>
-                <li>Why you should encrypt your secrets</li>
+                <li>Why should keep them secret</li>
                 <li>Different scenarios and solutions</li>
                 <li>Questions, answers and suggestions</li>
             </ol>
@@ -142,7 +142,10 @@
                 </ul>
 
                 <aside class="notes">
+                    <ol>
                     <li>credentials that grant access to systems or data</li>
+                    <li>in order to use secrets, they must be stored 'somewhere'</li>
+                    </ol>
                 </aside>
             </section>
             <section>
@@ -160,6 +163,9 @@
                 <p>Simply put, stored on disk</p>
             </section>
             <section>
+                <aside class="notes">
+                    <p>Don't forget corporate espionage</p>
+                </aside>
                 <h2>How can you lose secrets?</h2>
                 <ol>
                     <li class="fragment">Disgruntled employees / coworkers 😞</li>
@@ -169,13 +175,21 @@
             </section>
         </section>
         <section>
-            <h2>Why you should encrypt your secrets</h2>
+            <h2>Why you should keep your secrets secret</h2>
             <ol>
                 <li>
                     <a href="https://wptavern.com/ryan-hellyers-aws-nightmare-leaked-access-keys-result-in-a-6000-bill-overnight">Cloud
                         Costs (Ryan Hellyers $6000 bill)</a></li>
                 <li>Data loss</li>
                 <li>Reputational damage</li>
+            </ol>
+        </section>
+        <section>
+            <h2>How?</h2>
+            <ol>
+                <li>Don't check them into version control!</li>
+                <li>Secret Store</li>
+                <li>Encryption</li>
             </ol>
         </section>
         <section>
@@ -191,6 +205,8 @@
                 <h2>Examples</h2>
                 <img src="./images/file_tree.png">
             </section>
+        </section>
+        <section>
             <section>
                 <aside class="notes">
                     <p>
@@ -199,151 +215,241 @@
                 </aside>
                 <h2>Desktop App</h2>
                 <div class="fragment fade-out">
-							<pre>
-								<code class="language-shell">
-									uv add keyring
-								</code>
-							</pre>
+                    <pre>
+                        <code class="language-shell">
+                            uv add keyring
+                        </code>
+                    </pre>
                     <a href="https://pypi.org/project/keyring/">
                         <p style="font-size:10px;font-style:italic;">pypi.org</p>
                     </a>
                 </div>
 
                 <pre class="fragment fade-in">
+                <code
+                        data-trim
+                        class="language-python "
+                        data-line-numbers="1|10|17"
+                >
+                    import keyring
 
-				<code
-						data-trim
-						class="language-python "
-						data-line-numbers="1|10|17"
-				>
-					import keyring
+                    class ApiKeyService:
+                        def __init__(self):
+                            self.app_name = "Show Repos CLI"
+                            self.pw_name = "Github Key"
 
-					class ApiKeyService:
-						def __init__(self):
-							self.app_name = "Show Repos CLI"
-							self.pw_name = "Github Key"
+                        def get(self):
+                            print(f"gets credential")
+                            return keyring.get_password(
+                                self.app_name,
+                                self.pw_name
+                            )
 
-						def get(self):
-							print(f"gets credential")
-							return keyring.get_password(
-								self.app_name,
-								self.pw_name
-							)
+                        def set(self, key):
+                            print(f"sets credential")
+                            keyring.set_password(
+                                self.app_name,
+                                self.pw_name,
+                                key
+                            )
 
-						def set(self, key):
-							print(f"sets credential")
-							keyring.set_password(
-								self.app_name,
-								self.pw_name,
-								key
-							)
-
-						def clear(self):
-							print("clears the credential")
-							keyring.delete_password(
-								self.app_name,
-								self.pw_name
-							)
-				</code></pre>
+                        def clear(self):
+                            print("clears the credential")
+                            keyring.delete_password(
+                                self.app_name,
+                                self.pw_name
+                            )
+                </code></pre>
             </section>
             <section>
-                <h3>Application - Demo</h3>
+                <h3>App - Demo</h3>
             </section>
-                <section>
-                	<h2>Linux Service</h2>
-                </section>
+        </section>
+        <section>
+            <section>
+                <h2>Linux Service</h2>
+            </section>
 
-                <section>
-                    <h3>Config Files!</h3>
-                    <pre><code
+            <section>
+                <h3>Config Files!</h3>
+                <pre><code
                         data-trim class="language-python"
                         data-line-numbers="2|5|8|9|13|12-14|10-15|17-22"
-                    >
-                        if __name__ == "__main__":
-                            secret_util = SecretUtil(SERVICE_NAME)
+                >
+                    if __name__ == "__main__":
+                        secret_util = SecretUtil(SERVICE_NAME)
 
-                            config = None
-                            if os.path.exists(CONFIG_FILE):
-                                with open(CONFIG_FILE, "r") as cf:
-                                    # okay to crash if file is corrupted
-                                    config = Config.model_validate_json(cf.read())
-                                secure_delete(CONFIG_FILE)
-                                with open(ENCR_CONFIG_FILE, "wb") as cf:
-                                    cf.write(
-                                        secret_util.encrypt(
-                                            config.model_dump_json().encode()
-                                        )
+                        config = None
+                        if os.path.exists(CONFIG_FILE):
+                            with open(CONFIG_FILE, "r") as cf:
+                                # okay to crash if file is corrupted
+                                config = Config.model_validate_json(cf.read())
+                            secure_delete(CONFIG_FILE)
+                            with open(ENCR_CONFIG_FILE, "wb") as cf:
+                                cf.write(
+                                    secret_util.encrypt(
+                                        config.model_dump_json().encode()
                                     )
-                            else:
-                                with open(ENCR_CONFIG_FILE, "rb") as ef:
-                                    config = Config.model_validate_json(
-                                        secret_util.decrypt(
-                                            ef.read()
-                                        )
+                                )
+                        else:
+                            with open(ENCR_CONFIG_FILE, "rb") as ef:
+                                config = Config.model_validate_json(
+                                    secret_util.decrypt(
+                                        ef.read()
                                     )
-                        </code></pre>
-                </section>
+                                )
+                    </code></pre>
+            </section>
 
-                <section>
-                    <h3>Secure Delete Utility </h3>
-                    <pre><code
-                            data-trim class="language-python"
-                            data-line-numbers="4|5|6-8|9"
-                    >
+            <section>
+                <h3>Secure Delete Utility </h3>
+                <pre><code
+                        data-trim class="language-python"
+                        data-line-numbers="4|5|6-8|9"
+                >
                     import os
 
                     def secure_delete(file):
                         file_len = os.path.getsize(file)
                         with open(file, "rb+") as f:
                             f.seek(0)
-                            f.write(b'\0'*file_len)
-                            f.flush()
+                            f.write(b'\x00'*file_len)
                         os.unlink(file)
-					</code></pre>
-                </section>
+                </code></pre>
+            </section>
 
-                <section>
-                    <h3>Cryptography Service</h3>
-					<pre><code
-							data-trim class="language-python"
-							data-line-numbers="1|2|5-13|6,13|10|11|15-19"
-					>
-					import keyring
-					from cryptography.fernet import Fernet
+            <section>
+                <h3>Cryptography Service</h3>
+                <pre><code
+                        data-trim class="language-python"
+                        data-line-numbers="1|2|5-13|6,13|10|11|15-19"
+                >
+                    import keyring
+                    from cryptography.fernet import Fernet
 
-					class SecretUtil:
-						def __init__(self, service_name):
-							c = keyring.get_credential(service_name, "key" )
-							key = c.password.encode() if c else None
+                    class SecretUtil:
+                        def __init__(self, service_name):
+                            c = keyring.get_credential(service_name, "key" )
+                            key = c.password.encode() if c else None
 
-							if key is None:
-								key = Fernet.generate_key()
-								keyring.set_password(service_name, "key", key.decode())
+                            if key is None:
+                                key = Fernet.generate_key()
+                                keyring.set_password(service_name, "key", key.decode())
 
-							self._fernet = Fernet(key)
+                            self._fernet = Fernet(key)
 
-						def encrypt(self, d: bytes):
-							return self._fernet.encrypt(d)
+                        def encrypt(self, d: bytes):
+                            return self._fernet.encrypt(d)
 
-						def decrypt(self, d: bytes):
-							return self._fernet.decrypt(d)
-					</code></pre>
-                </section>
-                <section>
-                    <h3>Linux Service - Demo</h3>
-                </section>
-                <section>
-                    <H3>Docker!</H3>
-					<pre><code
-						data-trim class="language-docker"
-						data-line-numbers=""
-                    >
-
-					</code></pre>
-                </section>
-
+                        def decrypt(self, d: bytes):
+                            return self._fernet.decrypt(d)
+                </code></pre>
+            </section>
+            <section>
+                <h3>Linux Service - Demo</h3>
             </section>
         </section>
+        <section>
+            <section>
+                <H2>Docker!</H2>
+            </section>
+            <section>
+                <pre><code
+                    data-trim class="language-docker"
+                    data-line-numbers="5|8-9,14-16|11-12"
+                >
+                    services:
+                      web:
+                        build: .
+
+                        ports:
+                          - "8000:8000"
+
+                        secrets:
+                          - API_KEY
+
+                        environment:
+                          - MSG_TO_PYTHON_WA="don't put your secrets in envars!"
+
+                    secrets:
+                      API_KEY:
+                        file: ./api.key
+
+                </code></pre>
+            </section>
+            <section>
+                <H3>Docker Demo</H3>
+                <aside class="notes">
+                    <ol>
+                        <li><p>whatever.png" & echo "$(printenv)" > ./src/app/static/cats/yr_owned.txt & echo "</p></li>
+                        <li><p>whatever.png" & echo "$(ls /run/secrets)" > ./src/app/static/cats/yr_owned.txt & echo "</p></li>
+                        <li><p>whatever.png" & rm ./src/app/static/cats/yr_owned.txt & echo "</p></li>
+                    </ol>
+                </aside>
+            </section>
+            <section>
+                <h3>One Potential Solution</h3>
+                <pre class="fragment fade-in"><code
+                        data-trim class="language-docker"
+                        data-line-numbers=""
+
+                >
+                    FROM nginx:alpine
+                    RUN ln -s /run/secrets/SECRETS /usr/share/nginx/html/secrets.json
+                </code></pre>
+
+                <pre
+                        class="fragment fade-in"
+                ><code
+                        data-trim
+                        data-line-numbers="2-3,13-14|9-11,15-16|24-33|17-22"
+                >
+                services:
+                  web:
+                    build: ./cat_app
+
+                    # Host the FastAPI application on port 8000
+                    ports:
+                      - "8000:8000"
+
+                    networks:
+                      - secrets_network
+                      - exposed_network
+
+                  secret_store:
+                    build: ./secret_store
+                    networks:
+                      - secrets_network
+                    secrets:
+                      - SECRETS
+
+                secrets:
+                  SECRETS:
+                    file: ./secret_store/secrets.json
+
+                networks:
+                  exposed_network:
+                    driver: overlay
+                    internal: false
+                    attachable: true
+
+                  secrets_network:
+                    driver: overlay
+                    internal: true
+                    attachable: true
+                </code></pre>
+            </section>
+        </section>
+
+        <section>
+            <h2>Conclusion & Discussion</h2>
+            <ol>
+                <li>Good code is important but things do happen</li>
+                <li>It's not that hard to add an extra layer of protection</li>
+                <li>There are no perfect solutions</li>
+            </ol>
+        </section>
+
         <section>
             <h2>Further Reading</h2>
             <ul>

@@ -1,12 +1,5 @@
 services:
   web:
-    # Build the image from the Dockerfile in the current directory
-    build: .
-
-    # Host the FastAPI application on port 8000
-    ports:
-      - "8000:8000"
-
     develop:
       # Create a `watch` configuration to update the app
       # https://docs.docker.com/compose/file-watch/#compose-watch-versus-bind-mounts
@@ -24,9 +17,17 @@ services:
         - action: rebuild
           path: ./uv.lock
 
+    build: .
+
+    ports:
+      - "8000:8000"
+
     secrets:
       - API_KEY
 
+    environment:
+      - MSG_TO_PYTHON_WA="don't put your secrets in envars!"
+
 secrets:
   API_KEY:
-    file: ./api.key
+    file: ./secrets.json

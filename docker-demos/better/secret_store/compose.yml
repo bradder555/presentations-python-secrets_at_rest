@@ -1,0 +1,16 @@
+services:
+  web:
+    # Build the image from the Dockerfile in the current directory
+    build: .
+
+    # Host the FastAPI application on port 8000
+    # THIS FILE MUST NEVER BE USED IN PRODUCTION, ONLY FOR TESTING!!
+    ports:
+      - "8080:80"
+
+    secrets:
+      - SECRETS
+
+secrets:
+  SECRETS:
+    file: ./secrets.json

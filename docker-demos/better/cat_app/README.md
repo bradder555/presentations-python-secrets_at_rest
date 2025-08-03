@@ -6,18 +6,6 @@ the project mounted in the local image.
 See the [uv Docker integration guide](https://docs.astral.sh/uv/guides/integration/docker/) for more
 background.
 
-## Trying it out
-
-A [`run.sh`](./run.sh) utility is provided for quickly building the image and starting a container.
-This script demonstrates best practices for developing using the container, using bind mounts for
-the project and virtual environment directories.
-
-To build and run the web application in the container using `docker run`:
-
-```console
-$ ./run.sh
-```
-
 Then, check out [`http://localhost:8000`](http://localhost:8000) to see the website.
 
 A Docker compose configuration is also provided to demonstrate best practices for developing using
@@ -62,11 +50,6 @@ that comes with the base image.
 The [`.dockerignore`](./.dockerignore) file includes an entry for the `.venv` directory to ensure the
 `.venv` is not included in image builds. Note that the `.dockerignore` file is not applied to volume
 mounts during container runs.
-
-### Run script
-
-The [`run.sh`](./run.sh) script includes an example of invoking `docker run` for local development,
-mounting the source code for the project into the container so that edits are reflected immediately.
 
 ### Docker compose file
 

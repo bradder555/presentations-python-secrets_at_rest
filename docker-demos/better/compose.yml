@@ -1,0 +1,52 @@
+services:
+  web:
+    develop:
+      # Create a `watch` configuration to update the app
+      # https://docs.docker.com/compose/file-watch/#compose-watch-versus-bind-mounts
+      watch:
+        # Sync the working directory with the `/app` directory in the container
+        - action: sync
+          path: .
+          target: /app
+          # Exclude the project virtual environment — it could be for a
+          # different platform in the container
+          ignore:
+            - .venv/
+
+        # Rebuild the image if dependencies change by checking uv.lock
+        - action: rebuild
+          path: ./uv.lock
+
+    # Build the image from the Dockerfile in the current directory
+    build: ./cat_app
+
+    # Host the FastAPI application on port 8000
+    ports:
+      - "8000:8000"
+
+    networks:
+      - secrets_network
+      - exposed_network
+
+  secret_store:
+    # Build the image from the Dockerfile in the current directory
+    build: ./secret_store
+    networks:
+      - secrets_network
+    secrets:
+      - SECRETS
+
+secrets:
+  SECRETS:
+    file: ./secret_store/secrets.json
+
+networks:
+  exposed_network:
+    driver: overlay
+    internal: false
+    attachable: true
+
+  secrets_network:
+    driver: overlay
+    internal: true
+    attachable: true

